@@ -31,11 +31,3 @@ services:
       - key: ADMIN_EMAIL
         value: admin@avicola.demo
 
-databases:
-  - name: supermercado-avicola-db
-    plan: free
-    region: oregon
-    postgresMajorVersion: "16"
-    databaseName: supermercado_avicola
-    user: avicola_user
-    ipAllowList: []

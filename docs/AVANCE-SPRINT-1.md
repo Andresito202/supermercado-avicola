@@ -136,7 +136,7 @@ docker compose up --build -d
 ```
 - API: http://localhost:8000
 - Docs Swagger: http://localhost:8000/docs
-- Admin inicial: admin / Admin123!
+- Admin inicial: admin / ********
 
 ### Opcion 2: Sin Docker (desarrollo local)
 ```bash
@@ -153,14 +153,14 @@ uvicorn app.main:app --reload --port 8000
 ### Login:
 ```
 POST http://localhost:8000/api/auth/login
-Body: {"username": "admin", "password": "Admin123!"}
+Body: {"username": "admin", "password": "********"}
 ```
 
 ### Crear usuario (con token de admin):
 ```
 POST http://localhost:8000/api/auth/register
 Headers: Authorization: Bearer <token>
-Body: {"username": "cajero1", "email": "cajero1@avicola.local", "password": "Cajero123!", "nombre_completo": "Juan Perez", "rol": "cajero"}
+Body: {"username": "cajero1", "email": "cajero1@avicola.local", "password": "********", "nombre_completo": "Juan Perez", "rol": "cajero"}
 ```
 
 ### Ver perfil:

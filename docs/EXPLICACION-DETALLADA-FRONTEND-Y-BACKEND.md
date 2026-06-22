@@ -78,7 +78,7 @@ Es un **sistema web completo** para administrar un supermercado especializado en
 | **SQLAlchemy** | 2.0.36 | ORM (Object Relational Mapper) - permite interactuar con la base de datos usando clases de Python en vez de SQL puro |
 | **Pydantic** | 2.10.4 | Validacion de datos. Asegura que los datos que llegan a la API tengan el formato correcto |
 | **python-jose** | 3.3.0 | Crear y verificar tokens JWT para autenticacion |
-| **passlib + bcrypt** | 1.7.4 | Encriptar contrasenas de forma segura (nunca se guarda la contrasena en texto plano) |
+| **bcrypt** | 4.2.1 | Encriptar contrasenas de forma segura (nunca se guarda la contrasena en texto plano) |
 | **Alembic** | 1.14.1 | Migraciones de base de datos (versionado de cambios en las tablas) |
 | **Uvicorn** | 0.34.0 | Servidor ASGI que ejecuta la aplicacion FastAPI |
 | **psycopg2** | 2.9.10 | Driver para conectar Python con PostgreSQL |
@@ -270,7 +270,8 @@ Es un evento que se ejecuta UNA sola vez cuando el servidor arranca. Aqui aprove
 class Settings(BaseSettings):
     DB_USER: str = "avicola_user"       # Se lee de .env o usa el valor por defecto
     DB_PASSWORD: str = "avicola_pass"
-    SECRET_KEY: str = "clave-secreta"   # Para firmar los tokens JWT
+    SECRET_KEY: str                     # Obligatoria: se lee de variables de entorno
+    ADMIN_PASSWORD: str                 # Obligatoria: se lee de variables de entorno
     DATABASE_URL: str = ""              # Si se define, tiene prioridad sobre las variables individuales
     ...
 
@@ -337,8 +338,8 @@ def verify_password(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 ```
 ```
-hash_password("Admin123!")  →  "$2b$12$LJ3m5..."  (irreversible)
-verify_password("Admin123!", "$2b$12$LJ3m5...")  →  True
+hash_password(password)  →  "$2b$12$LJ3m5..."  (irreversible)
+verify_password(password, "$2b$12$LJ3m5...")  →  True
 ```
 La contrasena NUNCA se guarda en texto plano. Se guarda el hash. Para verificar, se hashea la contrasena ingresada y se compara con el hash guardado.
 
@@ -519,7 +520,7 @@ Si alguien intenta crear un producto con `precio_compra: -100`, Pydantic devuelv
 | `/api/auth/me` | GET | Devuelve datos del usuario logueado |
 
 **Flujo de login paso a paso:**
-1. Frontend envia `{"username": "admin", "password": "Admin123!"}`
+1. Frontend envia `{"username": "admin", "password": "********"}`
 2. Backend busca usuario en BD por username
 3. Compara password con hash usando bcrypt
 4. Si coincide, genera token JWT con ID y rol
@@ -748,9 +749,10 @@ formatDateTime(d) → "09/03/2026, 14:30"
 
 **Deteccion inteligente de URL:**
 ```javascript
-const API_BASE = (window.location.port === '8000' ? '' : 'http://localhost:8000') + '/api';
+const configuredApiBase = window.APP_CONFIG?.API_BASE_URL?.replace(/\/$/, '') || '';
+const API_BASE = `${configuredApiBase}/api`;
 ```
-Si el frontend se sirve desde el mismo puerto 8000 (produccion/Docker), usa ruta relativa. Si se abre desde otro puerto (desarrollo), apunta a localhost:8000.
+Si el frontend se sirve desde FastAPI, usa ruta relativa. Si se separa el frontend, la URL se configura desde `window.APP_CONFIG.API_BASE_URL` sin hardcodearla en el codigo base.
 
 ### 5.2 layout.js - Navegacion dinamica
 

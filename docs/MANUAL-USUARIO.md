@@ -41,20 +41,20 @@ uvicorn app.main:app --reload --port 8000
 ### Credenciales por defecto
 | Usuario | Contrasena | Rol |
 |---|---|---|
-| admin | Admin123! | Administrador |
+| admin | ******** | Administrador |
 
 ### Usuarios del seed (si se ejecuto seed_data.py)
 | Usuario | Contrasena | Rol |
 |---|---|---|
-| admin | Admin123! | Administrador |
-| cajero1 | Cajero123! | Cajero |
-| bodeguero1 | Bodega123! | Bodeguero |
-| supervisor1 | Super123! | Supervisor |
-| gerente1 | Gerente123! | Gerente |
+| admin | ******** | Administrador |
+| cajero1 | ******** | Cajero |
+| bodeguero1 | ******** | Bodeguero |
+| supervisor1 | ******** | Supervisor |
+| gerente1 | ******** | Gerente |
 
 ### Proceso de login
 1. Abrir http://localhost:8000/login.html
-2. Ingresar usuario y contrasena
+2. Copiar las credenciales desde la seccion demo o ingresar usuario y contrasena manualmente
 3. Hacer clic en "Iniciar Sesion"
 4. El sistema redirige al Dashboard
 
@@ -265,7 +265,7 @@ Esto crea: 5 usuarios, 10 categorias, 30 productos, 5 proveedores y 5 clientes d
 |---|---|
 | No carga la pagina | Verificar que Docker Desktop este corriendo y el contenedor activo |
 | Error de conexion a BD | Revisar que PostgreSQL este corriendo en puerto 5432 |
-| Login no funciona | Verificar credenciales. Por defecto: admin / Admin123! |
+| Login no funciona | Verificar credenciales desde la seccion demo del login |
 | No aparece menu lateral | Verificar que el token JWT no haya expirado. Cerrar sesion y volver a entrar |
 | Error al crear venta | Verificar que el producto tenga stock disponible |
 | No puede abrir caja | Solo un cajero puede tener una caja abierta a la vez |

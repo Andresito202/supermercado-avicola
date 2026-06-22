@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
+import sys
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -47,8 +48,20 @@ def _create_admin_if_needed():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    Base.metadata.create_all(bind=engine)
-    _create_admin_if_needed()
+    if settings.AUTO_CREATE_TABLES:
+        Base.metadata.create_all(bind=engine)
+
+    if settings.SEED_DEMO_DATA:
+        app_root = Path(__file__).resolve().parent.parent
+        repo_root = app_root.parent
+        for path in (app_root, repo_root):
+            if str(path) not in sys.path:
+                sys.path.append(str(path))
+        from database.seeds.seed_data import seed
+
+        seed(create_schema=settings.AUTO_CREATE_TABLES)
+    else:
+        _create_admin_if_needed()
     yield
 
 
@@ -61,7 +74,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -88,9 +101,16 @@ def health():
 
 # --- Servir frontend ---
 # Busca /frontend (Docker) o ../frontend (local)
+_configured_frontend_path = Path(settings.FRONTEND_DIR) if settings.FRONTEND_DIR else None
 _docker_path = Path("/frontend")
 _local_path = Path(__file__).resolve().parent.parent.parent / "frontend"
-FRONTEND_DIR = _docker_path if _docker_path.exists() else _local_path
+FRONTEND_DIR = (
+    _configured_frontend_path
+    if _configured_frontend_path and _configured_frontend_path.exists()
+    else _docker_path
+    if _docker_path.exists()
+    else _local_path
+)
 
 if FRONTEND_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR / "static")), name="static")

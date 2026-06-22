@@ -36,7 +36,7 @@ def test_me_no_token(client):
 
 def test_register_ok(client, auth_headers):
     res = client.post("/api/auth/register", headers=auth_headers, json={
-        "username": "cajero1", "email": "cajero@test.local",
+        "username": "cajero1", "email": "cajero@example.com",
         "password": "Cajero123!", "nombre_completo": "Test Cajero", "rol": "cajero",
     })
     assert res.status_code == 201
@@ -45,11 +45,11 @@ def test_register_ok(client, auth_headers):
 
 def test_register_duplicate_username(client, auth_headers):
     client.post("/api/auth/register", headers=auth_headers, json={
-        "username": "dup", "email": "dup1@test.local",
+        "username": "dup", "email": "dup1@example.com",
         "password": "Pass123!", "nombre_completo": "Dup", "rol": "cajero",
     })
     res = client.post("/api/auth/register", headers=auth_headers, json={
-        "username": "dup", "email": "dup2@test.local",
+        "username": "dup", "email": "dup2@example.com",
         "password": "Pass123!", "nombre_completo": "Dup2", "rol": "cajero",
     })
     assert res.status_code == 400
@@ -57,7 +57,7 @@ def test_register_duplicate_username(client, auth_headers):
 
 def test_register_no_auth(client):
     res = client.post("/api/auth/register", json={
-        "username": "x", "email": "x@test.local",
+        "username": "x", "email": "x@example.com",
         "password": "Pass123!", "nombre_completo": "X", "rol": "cajero",
     })
     assert res.status_code == 401

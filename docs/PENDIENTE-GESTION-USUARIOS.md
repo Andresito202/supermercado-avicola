@@ -106,7 +106,7 @@ Solo visible para el rol admin.
 2. Va a menu "Usuarios"
 3. Clic en "Nuevo Usuario"
 4. Llena: username=cajero1, nombre=Maria Lopez, email=maria@avicola.local,
-   password=Cajero123!, rol=cajero
+   password=********, rol=cajero
 5. Guardar
 6. Maria puede entrar al sistema con su usuario
 7. Maria solo ve: Dashboard, POS, Caja, Productos, Clientes

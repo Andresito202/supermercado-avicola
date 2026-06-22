@@ -18,8 +18,9 @@ from app.models.proveedor import Proveedor
 from app.models.cliente import Cliente
 
 
-def seed():
-    Base.metadata.create_all(bind=engine)
+def seed(create_schema: bool = True):
+    if create_schema:
+        Base.metadata.create_all(bind=engine)
     db = SessionLocal()
 
     try:

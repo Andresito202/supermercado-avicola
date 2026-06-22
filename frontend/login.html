@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Supermercado Avicola</title>
+  <title>Acceso | Supermercado Avicola</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="static/css/style.css" rel="stylesheet">
 </head>
@@ -12,43 +12,134 @@
     <div class="card login-card">
       <div class="card-header">
         <h4 class="mb-0">Supermercado Avicola</h4>
-        <small>Sistema de Gestion</small>
+        <small>Sistema integral de gestion comercial</small>
       </div>
       <div class="card-body p-4">
         <div id="alertBox"></div>
-        <form id="loginForm">
+        <form id="loginForm" autocomplete="off">
           <div class="mb-3">
             <label class="form-label">Usuario</label>
-            <input type="text" id="username" class="form-control" required autofocus>
+            <input type="text" id="username" class="form-control" autocomplete="off" required autofocus>
           </div>
           <div class="mb-3">
             <label class="form-label">Contrasena</label>
-            <input type="password" id="password" class="form-control" required>
+            <input type="password" id="password" class="form-control" autocomplete="off" required>
           </div>
           <button type="submit" class="btn btn-success w-100" id="btnLogin">Iniciar Sesion</button>
         </form>
+
+        <div class="demo-credentials mt-4 pt-3 border-top">
+          <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+            <div>
+              <h6 class="mb-1">Acceso demo para evaluacion tecnica</h6>
+              <p class="text-muted small mb-0">Usuarios disponibles para prueba controlada. Las contrasenas se mantienen ocultas.</p>
+            </div>
+            <span class="badge text-bg-light border">Demo</span>
+          </div>
+          <div id="demoCredentials" class="d-grid gap-2"></div>
+        </div>
       </div>
     </div>
   </div>
   <script src="static/js/api.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     if (getToken()) window.location.href = '/index.html';
+
+    const demoCredentials = [
+      { role: 'Administrador', username: 'admin', password: 'Admin123!' },
+      { role: 'Cajero', username: 'cajero1', password: 'Cajero123!' },
+      { role: 'Bodeguero', username: 'bodeguero1', password: 'Bodega123!' },
+      { role: 'Supervisor', username: 'supervisor1', password: 'Super123!' },
+      { role: 'Gerente', username: 'gerente1', password: 'Gerente123!' },
+    ];
+
+    function renderDemoCredentials() {
+      const container = document.getElementById('demoCredentials');
+      container.replaceChildren();
+
+      demoCredentials.forEach((credential, index) => {
+        const card = document.createElement('div');
+        card.className = 'demo-card';
+
+        const header = document.createElement('div');
+        header.className = 'demo-card-header';
+        const role = document.createElement('strong');
+        role.textContent = credential.role;
+        header.appendChild(role);
+
+        const userRow = createDemoRow('Usuario demo', credential.username, 'username', index);
+        const passwordRow = createDemoRow('Contrasena oculta por seguridad', '********', 'password', index);
+
+        card.append(header, userRow, passwordRow);
+        container.appendChild(card);
+      });
+    }
+
+    function createDemoRow(label, value, copyType, index) {
+      const row = document.createElement('div');
+      row.className = 'demo-row';
+
+      const labelElement = document.createElement('span');
+      labelElement.textContent = label;
+
+      const valueElement = document.createElement('code');
+      valueElement.textContent = value;
+      if (copyType === 'password') {
+        valueElement.setAttribute('aria-label', 'Contrasena oculta');
+      }
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'btn btn-outline-success btn-sm';
+      button.dataset.copy = copyType;
+      button.dataset.index = String(index);
+      button.textContent = 'Copiar';
+
+      row.append(labelElement, valueElement, button);
+      return row;
+    }
+
+    async function copyDemoValue(type, index, button) {
+      const credential = demoCredentials[index];
+      const value = type === 'password' ? credential.password : credential.username;
+
+      try {
+        await navigator.clipboard.writeText(value);
+        const originalText = button.textContent;
+        button.textContent = 'Copiado';
+        setTimeout(() => {
+          button.textContent = originalText;
+        }, 1600);
+      } catch {
+        showAlert(document.getElementById('alertBox'), 'No se pudo copiar automaticamente. Intenta nuevamente.');
+      }
+    }
+
+    renderDemoCredentials();
+
+    document.getElementById('demoCredentials').addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-copy]');
+      if (!button) return;
+      copyDemoValue(button.dataset.copy, Number(button.dataset.index), button);
+    });
 
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnLogin');
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
       btn.disabled = true;
       btn.textContent = 'Ingresando...';
+
       try {
-        const data = await apiPost('/auth/login', {
-          username: document.getElementById('username').value,
-          password: document.getElementById('password').value,
-        });
+        const data = await apiPost('/auth/login', { username, password });
         setToken(data.access_token);
         setUser(data.usuario);
         window.location.href = '/index.html';
       } catch (err) {
-        showAlert(document.getElementById('alertBox'), err.message);
+        showAlert(document.getElementById('alertBox'), err.message || 'No fue posible iniciar sesion. Intenta nuevamente.');
       } finally {
         btn.disabled = false;
         btn.textContent = 'Iniciar Sesion';

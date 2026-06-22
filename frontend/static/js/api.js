@@ -1,4 +1,5 @@
-const API_BASE = (window.location.port === '8000' ? '' : 'http://localhost:8000') + '/api';
+const configuredApiBase = window.APP_CONFIG?.API_BASE_URL?.replace(/\/$/, '') || '';
+const API_BASE = `${configuredApiBase}/api`;
 
 function getToken() {
   return localStorage.getItem('token');
@@ -36,17 +37,38 @@ async function api(endpoint, options = {}) {
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  const res = await fetch(url, { ...options, headers });
+  let res;
+  try {
+    res = await fetch(url, { ...options, headers });
+  } catch {
+    throw new Error('No se pudo conectar con el servicio. Intenta nuevamente en unos segundos.');
+  }
+
   if (res.status === 401) {
     logout();
     return;
   }
   if (res.status === 204) return null;
-  const data = await res.json();
+
+  const isJson = res.headers.get('content-type')?.includes('application/json');
+  const data = isJson ? await res.json() : null;
+
   if (!res.ok) {
-    throw new Error(data.detail || 'Error en la solicitud');
+    throw new Error(getFriendlyError(res.status, data));
   }
   return data;
+}
+
+function getFriendlyError(status, data) {
+  if (status === 400 || status === 422) {
+    return typeof data?.detail === 'string'
+      ? data.detail
+      : 'Revisa la informacion ingresada e intenta nuevamente.';
+  }
+  if (status === 403) return 'No tienes permisos para realizar esta accion.';
+  if (status === 404) return 'No se encontro el recurso solicitado.';
+  if (status >= 500) return 'El servicio esta iniciando o no esta disponible. Intenta nuevamente en unos segundos.';
+  return 'No fue posible completar la solicitud.';
 }
 
 async function apiGet(endpoint) {
@@ -66,10 +88,23 @@ async function apiDelete(endpoint) {
 }
 
 function showAlert(container, message, type = 'danger') {
-  container.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
-    ${message}
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>`;
+  const allowedTypes = ['success', 'info', 'warning', 'danger'];
+  const safeType = allowedTypes.includes(type) ? type : 'danger';
+  container.replaceChildren();
+
+  const alert = document.createElement('div');
+  alert.className = `alert alert-${safeType} alert-dismissible fade show`;
+  alert.setAttribute('role', 'alert');
+  alert.textContent = message;
+
+  const closeButton = document.createElement('button');
+  closeButton.type = 'button';
+  closeButton.className = 'btn-close';
+  closeButton.setAttribute('data-bs-dismiss', 'alert');
+  closeButton.setAttribute('aria-label', 'Cerrar');
+
+  alert.appendChild(closeButton);
+  container.appendChild(alert);
 }
 
 function formatMoney(val) {

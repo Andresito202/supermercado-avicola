@@ -2,6 +2,16 @@
 Configuracion de tests con base de datos SQLite en memoria.
 No requiere PostgreSQL para ejecutar las pruebas.
 """
+import os
+
+os.environ.setdefault("ENVIRONMENT", "test")
+os.environ.setdefault("DATABASE_URL", "sqlite://")
+os.environ.setdefault("SECRET_KEY", "test-secret-key-for-supermercado-avicola-suite")
+os.environ.setdefault("ADMIN_PASSWORD", "Admin123!")
+os.environ.setdefault("CORS_ORIGINS", "http://testserver")
+os.environ.setdefault("AUTO_CREATE_TABLES", "false")
+os.environ.setdefault("SEED_DEMO_DATA", "false")
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -37,7 +47,7 @@ def setup_db():
     Base.metadata.create_all(bind=engine_test)
     db = TestSession()
     admin = Usuario(
-        username="admin", email="admin@test.local",
+        username="admin", email="admin@example.com",
         hashed_password=hash_password("Admin123!"),
         nombre_completo="Admin Test", rol=RolEnum.admin,
     )

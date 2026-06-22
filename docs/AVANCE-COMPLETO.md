@@ -265,7 +265,7 @@ cd backend
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
-Abrir http://localhost:8000 → Login: admin / Admin123!
+Abrir http://localhost:8000 y usar la seccion de acceso demo. Las contrasenas no se documentan en texto plano.
 
 El sistema detecta automaticamente si hay PostgreSQL o usa SQLite segun la variable `DATABASE_URL` en `.env`. Por defecto usa SQLite local (`sqlite:///./supermercado_avicola.db`).
 

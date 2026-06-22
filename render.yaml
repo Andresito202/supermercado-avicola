@@ -2,7 +2,7 @@ services:
   - type: web
     name: supermercado-avicola
     runtime: docker
-    plan: starter
+    plan: free
     region: oregon
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/health
@@ -35,7 +35,7 @@ services:
 
 databases:
   - name: supermercado-avicola-db
-    plan: basic-256mb
+    plan: free
     region: oregon
     postgresMajorVersion: "16"
     databaseName: supermercado_avicola
